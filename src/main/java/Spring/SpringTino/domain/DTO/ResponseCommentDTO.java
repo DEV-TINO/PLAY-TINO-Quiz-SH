@@ -12,4 +12,6 @@ public class ResponseCommentDTO {
     String content;
     Integer heartCount;
     LocalDateTime uploadTime;
+
+    Boolean checkMyHeart;
 }

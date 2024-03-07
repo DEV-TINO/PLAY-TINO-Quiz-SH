@@ -1,5 +1,8 @@
 package Spring.SpringTino.service;
 
+import Spring.SpringTino.Bean.CheckCommentHeartDAOBean;
+import Spring.SpringTino.Bean.DeleteCommentDAOBean;
+import Spring.SpringTino.Bean.SaveCommentDAOBean;
 import Spring.SpringTino.domain.*;
 import Spring.SpringTino.domain.DTO.RequestCommentDeleteDTO;
 import Spring.SpringTino.domain.DTO.RequestCommentSaveDTO;
@@ -18,10 +21,88 @@ import java.util.UUID;
 public class CommentService {
 
     JpaCommentRepository jpaCommentRepository;
+    SaveCommentDAOBean saveCommentDAOBean;
+    DeleteCommentDAOBean deleteCommentDAOBean;
+    CheckCommentHeartDAOBean checkCommentHeartDAOBean;
 
     @Autowired
-    public CommentService(JpaCommentRepository jpaCommentRepository) {
+    public CommentService(JpaCommentRepository jpaCommentRepository, SaveCommentDAOBean saveCommentDAOBean, DeleteCommentDAOBean deleteCommentDAOBean, CheckCommentHeartDAOBean checkCommentHeartDAOBean) {
         this.jpaCommentRepository = jpaCommentRepository;
+        this.saveCommentDAOBean = saveCommentDAOBean;
+        this.deleteCommentDAOBean = deleteCommentDAOBean;
+        this.checkCommentHeartDAOBean = checkCommentHeartDAOBean;
+    }
+
+
+    //commentId를 통한 댓글 조회
+    public ResponseCommentDTO readCommentId(UUID commentId) {
+        // id를 통해서 comment 객체를 찾아
+        // findById -> Pk값을 통해서 해당 객체를 찾아서 반환해줌
+        Comment comment = jpaCommentRepository.findById(commentId).get();
+
+
+        // 찾은 객체는 DAO 임
+        // DAO -> DTO로 변환하는 과정
+        ResponseCommentDTO responseCommentDTO = new ResponseCommentDTO();
+
+        // DTO 객체 값을 초기화
+        responseCommentDTO.setCommentId(comment.getCommentId());
+        responseCommentDTO.setUserId(comment.getUserId());
+        responseCommentDTO.setHeartCount(comment.getHeartCount());
+        responseCommentDTO.setUploadTime(comment.getUploadTime());
+        responseCommentDTO.setContent(comment.getContent());
+
+        responseCommentDTO.setCheckMyHeart(checkCommentHeartDAOBean.checkMyHeart(comment.getCommentId(), comment.getUserId()));
+
+        // 생성된 DTO를 반환
+        return responseCommentDTO;
+    }
+
+//    public List<ResponseCommentDTO> readCommentHeart() {
+//        List<Comment> comments = jpaCommentRepository.findAllOrderByUploadTimeDesc();
+//
+//        List<ResponseCommentDTO> responseCommentDTOS = new ArrayList<>();
+//
+//        for(Comment comment : comments) {
+//            ResponseCommentDTO responseCommentDTO = new ResponseCommentDTO();
+//
+//            responseCommentDTO.setCommentId(comment.getCommentId());
+//            responseCommentDTO.setUserId(comment.getUserId());
+//            responseCommentDTO.setHeartCount(comment.getHeartCount());
+//            responseCommentDTO.setUploadTime(comment.getUploadTime());
+//            responseCommentDTO.setContent(comment.getContent());
+//            responseCommentDTO.setCheckMyHeart(checkCommentHeartDAOBean.checkMyHeart(comment.getCommentId(), comment.getUserId()));
+//
+//
+//            responseCommentDTOS.add(responseCommentDTO);
+//        }
+//
+//        return responseCommentDTOS;
+//    }
+
+    //댓글 전체 조회
+    public List<ResponseCommentDTO> readCommentAll(UUID userId) {
+        //List를 통해
+        List<Comment> comments = jpaCommentRepository.findAll();
+
+        List<ResponseCommentDTO> responseCommentDTOS = new ArrayList<>();
+
+        for(Comment comment : comments) {
+            ResponseCommentDTO responseCommentDTO = new ResponseCommentDTO();
+
+            responseCommentDTO.setCommentId(comment.getCommentId());
+            responseCommentDTO.setUserId(comment.getUserId());
+            responseCommentDTO.setHeartCount(comment.getHeartCount());
+            responseCommentDTO.setUploadTime(comment.getUploadTime());
+            responseCommentDTO.setContent(comment.getContent());
+            responseCommentDTO.setCheckMyHeart(checkCommentHeartDAOBean.checkMyHeart(comment.getCommentId(), userId));
+
+
+            responseCommentDTOS.add(responseCommentDTO);
+        }
+
+
+        return responseCommentDTOS;
     }
 
     //댓글 생성
@@ -37,57 +118,14 @@ public class CommentService {
         comment.setUploadTime(LocalDateTime.now());
 
         // DAO를 저장 -> comment createComment
-        jpaCommentRepository.save(comment);
+        saveCommentDAOBean.exec(comment);
 
         // 만들어진 Comment에 PK값을 반환해준다.
         return comment.getCommentId();
     }
 
-    public List<ResponseCommentDTO> readCommentAll() {
-        //List를 통해
-        List<Comment> comments = jpaCommentRepository.findAll();
-
-
-        List<ResponseCommentDTO> responseCommentDTOS = new ArrayList<>();
-
-        for(Comment comment : comments) {
-            ResponseCommentDTO responseCommentDTO = new ResponseCommentDTO();
-
-            responseCommentDTO.setCommentId(comment.getCommentId());
-            responseCommentDTO.setUserId(comment.getUserId());
-            responseCommentDTO.setHeartCount(comment.getHeartCount());
-            responseCommentDTO.setUploadTime(comment.getUploadTime());
-            responseCommentDTO.setContent(comment.getContent());
-
-            responseCommentDTOS.add(responseCommentDTO);
-        }
-
-        return responseCommentDTOS;
-    }
-
-    public ResponseCommentDTO readCommentId(UUID commentId) {
-        // id를 통해서 comment 객체를 찾아
-        // findById -> Pk값을 통해서 해당 객체를 찾아서 반환해줌
-        Comment comment = jpaCommentRepository.findById(commentId).orElse(null);
-        if (comment == null) return null;
-
-        // 찾은 객체는 DAO 임
-        // DAO -> DTO로 변환하는 과정
-        ResponseCommentDTO responseCommentDTO = new ResponseCommentDTO();
-
-        // DTO 객체 값을 초기화
-        responseCommentDTO.setCommentId(comment.getCommentId());
-        responseCommentDTO.setUserId(comment.getUserId());
-        responseCommentDTO.setHeartCount(comment.getHeartCount());
-        responseCommentDTO.setUploadTime(comment.getUploadTime());
-        responseCommentDTO.setContent(comment.getContent());
-
-        // 생성된 DTO를 반환
-        return responseCommentDTO;
-    }
-
     public UUID updateComment(RequestCommentUpdateDTO requestCommentUpdateDTO) {
-        //id를 통해서 원하는 comment 객체를 찾는다
+        //commentㅑd를 통해서 원하는 comment 객체를 찾는다
         Comment comment = jpaCommentRepository.findById(requestCommentUpdateDTO.getCommentId()).get();
 
         //DAO안에 DTO의 값을 넣어준다
@@ -96,7 +134,8 @@ public class CommentService {
         comment.setContent(requestCommentUpdateDTO.getContent());
 
         //DAO를 저장
-        jpaCommentRepository.save(comment);
+        saveCommentDAOBean.exec(comment);
+
 
         //DAO의 키값을 반환
         return comment.getCommentId();
@@ -106,22 +145,11 @@ public class CommentService {
     public UUID deleteComment(RequestCommentDeleteDTO requestCommentDeleteDTO) {
         Comment comment = jpaCommentRepository.findById(requestCommentDeleteDTO.getCommentId()).get();
 
-        //DAO를 삭제
-        jpaCommentRepository.delete(comment);
+        //댓글(DAO)을 삭제
+        deleteCommentDAOBean.exec(comment);
 
         //DAO의 키값을 반환
         return comment.getCommentId();
     }
 
-    public void heartPlus(UUID commentId) {
-        Comment comment = jpaCommentRepository.findById(commentId).get();
-
-        comment.setHeartCount(comment.getHeartCount()+1);
-    }
-
-    public void heartMinus(UUID commentId) {
-        Comment comment = jpaCommentRepository.findById(commentId).get();
-
-        comment.setHeartCount(comment.getHeartCount()-1);
-    }
 }
