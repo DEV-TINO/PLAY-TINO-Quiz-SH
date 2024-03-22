@@ -26,21 +26,29 @@ public class CommentController {
     }
 
 
-    @GetMapping("/problem/comment/{commentId}")
-    public ResponseCommentDTO readCommentId(@PathVariable UUID commentId) {
-        return commentService.readCommentId(commentId);
-    }
-
-//    @GetMapping("/problem/comment/heart")
-//    public List<ResponseCommentDTO> readCommentHeart() {
-//        return commentService.readCommentHeart();
+//    @GetMapping("/problem/comment/{commentId}")
+//    public ResponseCommentDTO readCommentId(@PathVariable UUID commentId) {
+//        return commentService.readCommentId(commentId);
+//    }
+//
+//    @GetMapping("/problem/comment/all/{userId}")
+//    public List<ResponseCommentDTO> readCommentAll(@PathVariable UUID userId) {
+//        return commentService.readCommentAll(userId);
 //    }
 
-    @GetMapping("/problem/comment/all/{userId}")
-    public List<ResponseCommentDTO> readCommentAll(@PathVariable UUID userId) {
-        return commentService.readCommentAll(userId);
+    //좋아요순으로 전체조회
+    @GetMapping("/problem/comment/heartCount/{userId}")
+    public List<ResponseCommentDTO> readCommentHeartCount(@PathVariable UUID userId, @RequestParam(required = false, defaultValue="0") int page) {
+        return commentService.readCommentHeartCount(userId, page, 10);
     }
 
+    //최신순으로 전체조회
+    @GetMapping("/problem/comment/uploadTime/{userId}")
+    public List<ResponseCommentDTO> readCommentUploadTime(@PathVariable UUID userId, @RequestParam(required = false, defaultValue="0") int page) {
+        return commentService.readCommentUploadTime(userId, page, 10);
+    }
+
+    //댓글 저장
     @PostMapping("/problem/comment")
     public ResponseEntity<Map<String, Object>> createComment(@RequestBody RequestCommentSaveDTO requestCommentSaveDTO) {
         UUID commentId = commentService.createComment(requestCommentSaveDTO);
@@ -50,14 +58,14 @@ public class CommentController {
 
         // 메시지와 id 값 json 데이터로 반환
         Map<String, Object> requestMap = new HashMap<>();
-        requestMap.put("message", (commentId != null) ? "생성 성공" : "생성 실패");
+        requestMap.put("success", commentId != null);
 
         return ResponseEntity.status(httpStatus).body(requestMap);
     }
 
+    //댓글 수정
     @PutMapping("/problem/comment")
     public ResponseEntity<Map<String, Object>> updateComment(@RequestBody RequestCommentUpdateDTO requestCommentUpdateDTO) {
-//        return commentService.updateComment(requestCommentUpdateDTO);
         UUID commentId = commentService.updateComment(requestCommentUpdateDTO);
 
         // HTTP 상태 반환
@@ -65,11 +73,12 @@ public class CommentController {
 
         // 메시지와 id 값 json 데이터로 반환
         Map<String, Object> requestMap = new HashMap<>();
-        requestMap.put("message", (commentId != null) ? "수정 성공" : "수정 실패");
+        requestMap.put("success", commentId != null);
 
         return ResponseEntity.status(httpStatus).body(requestMap);
     }
 
+    //댓글 삭제
     @DeleteMapping("/problem/comment")
     public ResponseEntity<Map<String, Object>> deleteComment(@RequestBody RequestCommentDeleteDTO requestCommentDeleteDTO) {
         UUID commentId = commentService.deleteComment(requestCommentDeleteDTO);
@@ -79,7 +88,7 @@ public class CommentController {
 
         // 메시지와 id 값 json 데이터로 반환
         Map<String, Object> requestMap = new HashMap<>();
-        requestMap.put("message", (commentId != null) ? "삭제 성공" : "삭제 실패");
+        requestMap.put("success", commentId != null);
 
         return ResponseEntity.status(httpStatus).body(requestMap);
     }

@@ -18,33 +18,21 @@ public class UpdateCommentHeartCountDAOBean {
     }
 
     //댓글좋아요 추가(+1)
-    public Comment heartCountUp(UUID commentId){
-
-        //commentId로 해당 Comment(DAO) 찾기
-        Comment comment = jpaCommentRepository.findById(commentId).get();
-
+    public Comment heartCountUp(Comment comment){
         //DAO의 댓글좋아요개수(HeartCount) +1
         comment.setHeartCount(comment.getHeartCount()+1);
 
-        // 필드로 좋아요 여부를 판단해
-
-        // 이 판단한 여부를 다른사람이랑 다르게할수 있는 방법이 없음
-
-
-
+        //comment 객체 반환
         return comment;
 
     }
 
     //댓글좋아요 삭제(-1)
-    public Comment heartCountDown(UUID commentId){
-
-        //commentId로 해당 Comment(DAO) 찾기
-        Comment comment = jpaCommentRepository.findById(commentId).get();
-
+    public Comment heartCountDown(Comment comment){
         //댓글좋아요개수(HeartCount) -1
         comment.setHeartCount(comment.getHeartCount()-1);
 
+        //comment 객체 반환
         return comment;
 
     }

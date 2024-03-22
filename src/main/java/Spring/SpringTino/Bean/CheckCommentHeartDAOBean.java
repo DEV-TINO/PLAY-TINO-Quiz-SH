@@ -19,6 +19,7 @@ public class CheckCommentHeartDAOBean {
         this.jpaCommentHeartRepository = jpaCommentHeartRepository;
     }
 
+    //commentID와 userId를 통해 유저가 comment 에 좋아요를 눌렀는지 boolean 값으로 반환
     public boolean checkMyHeart(UUID commentId, UUID userId) {
         return jpaCommentHeartRepository.existsByCommentIdAndUserId(commentId, userId);
     }

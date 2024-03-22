@@ -35,7 +35,7 @@ public class CommentHeartController {
         HttpStatus httpStatus = (commentHeartId != null) ? HttpStatus.OK : HttpStatus.INTERNAL_SERVER_ERROR;
 
         Map<String, Object> requestMap = new HashMap<>();
-        requestMap.put("message", (commentHeartId != null) ? "좋아요 추가 성공" : "좋아요 추가 실패");
+        requestMap.put("success", commentHeartId != null);
 
         return ResponseEntity.status(httpStatus).body(requestMap);
     }
@@ -47,7 +47,7 @@ public class CommentHeartController {
         HttpStatus httpStatus = (commentHeartId != null) ? HttpStatus.OK : HttpStatus.INTERNAL_SERVER_ERROR;
 
         Map<String, Object> requestMap = new HashMap<>();
-        requestMap.put("message", (commentHeartId != null) ? "좋아요 삭제 성공" : "좋아요 삭제 실패");
+        requestMap.put("success", commentHeartId != null);
 
         return ResponseEntity.status(httpStatus).body(requestMap);
     }
